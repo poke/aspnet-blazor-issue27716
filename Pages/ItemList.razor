@@ -1,0 +1,56 @@
+﻿@implements IDisposable
+@inject SomeService someService
+@page "/ItemList"
+
+<ul>
+    @if (isLoading)
+    {
+        <li>Loading…</li>
+    }
+    else
+    {
+        @foreach (var item in items)
+        {
+            <li>@item.Title</li>
+        }
+    }
+</ul>
+
+@code {
+    bool isLoading = true;
+    IList<Item> items;
+
+    protected override void OnInitialized()
+    {
+        someService.ItemsChanged += HandleItemsChanged;
+        isLoading = true;
+    }
+
+    public void Dispose()
+    {
+        someService.ItemsChanged -= HandleItemsChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            items = await someService.LoadItems();
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    void HandleItemsChanged(object sender, EventArgs e)
+    {
+        InvokeAsync(async () =>
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            items = await someService.LoadItems();
+            isLoading = false;
+            StateHasChanged();
+        });
+    }
+}
