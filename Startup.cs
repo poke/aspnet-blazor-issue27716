@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,6 +43,13 @@ namespace ExampleApp
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+
+                endpoints.Map("/add", async ctx =>
+                {
+                    ctx.RequestServices.GetService<SomeService>().AddItem();
+
+                    await ctx.Response.WriteAsync("Ok");
+                });
             });
         }
     }

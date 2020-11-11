@@ -41,9 +41,9 @@
         }
     }
 
-    void HandleItemsChanged(object sender, EventArgs e)
+    async void HandleItemsChanged(object sender, EventArgs e)
     {
-        InvokeAsync(async () =>
+        await InvokeAsync(async () =>
         {
             isLoading = true;
             StateHasChanged();
