@@ -19,6 +19,7 @@
 @code {
     bool isLoading = true;
     IList<Item> items;
+    bool reloadItems;
 
     protected override void OnInitialized()
     {
@@ -33,23 +34,21 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender || reloadItems)
         {
             items = await someService.LoadItems();
             isLoading = false;
+            reloadItems = false;
             StateHasChanged();
         }
     }
 
     async void HandleItemsChanged(object sender, EventArgs e)
     {
-        await InvokeAsync(async () =>
+        await InvokeAsync(() =>
         {
             isLoading = true;
-            StateHasChanged();
-
-            items = await someService.LoadItems();
-            isLoading = false;
+            reloadItems = true;
             StateHasChanged();
         });
     }
