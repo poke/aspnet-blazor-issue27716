@@ -1,6 +1,4 @@
-﻿@implements IDisposable
-@inject SomeService someService
-@page "/ItemList"
+﻿@inject SomeService someService
 
 <ul>
     @if (isLoading)
@@ -20,37 +18,26 @@
     bool isLoading = true;
     IList<Item> items;
 
+    [CascadingParameter]
+    public Task<IList<Item>> ItemLoadTask { get; set; }
+
     protected override void OnInitialized()
     {
-        someService.ItemsChanged += HandleItemsChanged;
         isLoading = true;
     }
 
-    public void Dispose()
+    public async override Task SetParametersAsync(ParameterView parameters)
     {
-        someService.ItemsChanged -= HandleItemsChanged;
-    }
+        await base.SetParametersAsync(parameters);
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            items = await someService.LoadItems();
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
-
-    async void HandleItemsChanged(object sender, EventArgs e)
-    {
-        await InvokeAsync(async () =>
+        if (ItemLoadTask != null)
         {
             isLoading = true;
             StateHasChanged();
 
-            items = await someService.LoadItems();
+            items = await ItemLoadTask;
             isLoading = false;
             StateHasChanged();
-        });
+        }
     }
 }

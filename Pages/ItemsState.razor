@@ -1,0 +1,31 @@
+﻿@implements IDisposable
+@inject SomeService someService
+
+<CascadingValue TValue="Task<IList<Item>>" Value="@_currentLoadTask" ChildContent="@ChildContent" />
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private Task<IList<Item>> _currentLoadTask;
+
+    protected override void OnInitialized()
+    {
+        someService.ItemsChanged += HandleItemsChanged;
+        _currentLoadTask = someService.LoadItems();
+    }
+
+    public void Dispose()
+    {
+        someService.ItemsChanged -= HandleItemsChanged;
+    }
+
+    void HandleItemsChanged(object sender, EventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            _currentLoadTask = someService.LoadItems();
+            StateHasChanged();
+        });
+    }
+}
